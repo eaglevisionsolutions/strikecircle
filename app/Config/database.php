@@ -11,7 +11,7 @@ function db_connect(): PDO {
     $db      = env('DB_NAME', 'strikecircle');
     $user    = env('DB_USER', 'root');
     $pass    = env('DB_PASS', '');
-    $charset = 'utf8mb4';
+    $charset = env('DB_CHARSET', 'utf8mb4');
 
     $dsn = "mysql:host={$host};port={$port};dbname={$db};charset={$charset}";
 
@@ -24,7 +24,7 @@ function db_connect(): PDO {
     try {
         $pdo = new PDO($dsn, $user, $pass, $options);
         return $pdo;
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         $msg = 'Database connection failed: ' . $e->getMessage();
 
         // CLI migrations: print error

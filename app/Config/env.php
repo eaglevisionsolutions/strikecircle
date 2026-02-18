@@ -2,62 +2,54 @@
 declare(strict_types=1);
 
 /**
- * Simple environment loader
- * - Loads <project-root>/.env then <project-root>/.env.<APP_ENV>
- * - APP_ENV defaults to "local" (so it will load .env.local)
- * - Usage: env('KEY', 'default')
+ * Robust environment loader for CLI and web
+ * Loads .env (always), then .env.<env> (local, staging, production) if APP_ENV is set
+ * Priority: .env < .env.<env> (higher wins)
+ * Usage: env('KEY', 'default')
  */
 
 if (!function_exists('env')) {
-
     function env(string $key, mixed $default = null): mixed
     {
         static $vars = null;
-
         if ($vars === null) {
             $vars = [];
-
-            // app/config -> project root (strikecircle)
             $root = realpath(__DIR__ . '/../../');
-            if ($root === false) {
-                $root = __DIR__ . '/../../';
-            }
+            if ($root === false) $root = __DIR__ . '/../../';
 
-            // Helper to load a single .env file into $vars
+            // Always load .env first (lowest priority)
             $loadFile = function (string $path) use (&$vars): void {
-                if (!is_file($path) || !is_readable($path)) {
-                    return;
-                }
-
+                if (!is_file($path) || !is_readable($path)) return;
                 $lines = file($path, FILE_IGNORE_NEW_LINES);
                 if ($lines === false) return;
-
                 foreach ($lines as $line) {
                     $line = trim($line);
-
-                    // Skip empty lines and comments
-                    if ($line === '' || str_starts_with($line, '#')) {
-                        continue;
-                    }
-
-                    // Allow "export KEY=value"
-                    if (str_starts_with($line, 'export ')) {
-                        $line = trim(substr($line, 7));
-                    }
-
-                    // Must contain "="
+                    if ($line === '' || str_starts_with($line, '#')) continue;
+                    if (str_starts_with($line, 'export ')) $line = trim(substr($line, 7));
                     $pos = strpos($line, '=');
                     if ($pos === false) continue;
-
                     $k = trim(substr($line, 0, $pos));
                     $v = trim(substr($line, $pos + 1));
-
                     // Remove surrounding quotes
-                    if (
-                        (strlen($v) >= 2) &&
-                        (($v[0] === '"' && $v[strlen($v) - 1] === '"') ||
-                         ($v[0] === "'" && $v[strlen($v) - 1] === "'"))
-                    ) {
+                    if ((strlen($v) >= 2) && (($v[0] === '"' && $v[strlen($v) - 1] === '"') || ($v[0] === "'" && $v[strlen($v) - 1] === "'"))) {
+                        $v = substr($v, 1, -1);
+                    }
+                    $vars[$k] = $v;
+                }
+            };
+
+            $loadFile($root . '/.env');
+
+            // Determine env (default local)
+            $env = $vars['APP_ENV'] ?? getenv('APP_ENV') ?: 'local';
+            $envFile = $root . '/.env.' . $env;
+            if (is_file($envFile)) {
+                $loadFile($envFile);
+            }
+        }
+        return $vars[$key] ?? $default;
+    }
+}
                         $v = substr($v, 1, -1);
                     }
 

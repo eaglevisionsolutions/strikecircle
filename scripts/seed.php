@@ -1,81 +1,69 @@
+
 <?php
-// Seed demo user for StrikeCircle
+// scripts/seed.php
+// Laravel-style seeder runner for StrikeCircle
+
+declare(strict_types=1);
+
+use App\Database\Seeder;
+
+require_once __DIR__ . '/../app/Config/env.php';
 require_once __DIR__ . '/../app/Config/database.php';
-$pdo = db_connect();
-$email = 'demo@strikecircle.local';
-$username = 'demo';
-$password = password_hash('DemoPass123!', PASSWORD_DEFAULT);
-$exists = $pdo->prepare('SELECT id FROM users WHERE email = ? OR username = ?');
-$exists->execute([$email, $username]);
-if ($exists->fetch()) {
-    echo "Demo user already exists.\n";
 
-    <?php
-    // Seed demo users, posts, likes, comments for StrikeCircle
-    require_once __DIR__ . '/../app/Config/database.php';
-    $pdo = db_connect();
-
-    $users = [
-        ['demo@strikecircle.local', 'demo', 'DemoPass123!'],
-        ['alice@strikecircle.local', 'alice', 'AlicePass!'],
-        ['bob@strikecircle.local', 'bob', 'BobPass!'],
-    ];
-    $userIds = [];
-    foreach ($users as $u) {
-        [$email, $username, $pw] = $u;
-        $exists = $pdo->prepare('SELECT id FROM users WHERE email = ? OR username = ?');
-        $exists->execute([$email, $username]);
-        $row = $exists->fetch();
-        if ($row) {
-            $userIds[] = $row['id'];
-            continue;
-        }
-        $password = password_hash($pw, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare('INSERT INTO users (email, username, password, created_at) VALUES (?, ?, ?, NOW())');
-        $stmt->execute([$email, $username, $password]);
-        $userIds[] = $pdo->lastInsertId();
-        echo "User created: $email / $pw\n";
+// Autoload seeders (no Composer)
+spl_autoload_register(function ($class) {
+    $prefix = 'App\\Database\\Seeders\\';
+    if (str_starts_with($class, $prefix)) {
+        $file = __DIR__ . '/../seeders/' . substr($class, strlen($prefix)) . '.php';
+        if (is_file($file)) require_once $file;
     }
+});
 
-    // Insert 8 posts (mix text/score)
-    $posts = [
-        ['user' => 0, 'type' => 'text', 'body' => 'Welcome to StrikeCircle!'],
-        ['user' => 1, 'type' => 'score', 'body' => 'New high score!', 'score' => 245],
-        ['user' => 2, 'type' => 'text', 'body' => 'Ready for league night!'],
-        ['user' => 0, 'type' => 'score', 'body' => 'Personal best!', 'score' => 210],
-        ['user' => 1, 'type' => 'text', 'body' => 'Who wants to bowl this weekend?'],
-        ['user' => 2, 'type' => 'score', 'body' => 'Almost a perfect game!', 'score' => 298],
-        ['user' => 0, 'type' => 'text', 'body' => 'Let’s get a tournament going!'],
-        ['user' => 1, 'type' => 'score', 'body' => 'Practice makes perfect.', 'score' => 180],
-    ];
+// Also load all seeders in /seeders for direct class usage
+foreach (glob(__DIR__ . '/../seeders/*.php') as $file) {
+    require_once $file;
+}
 
-    // Insert scores and posts
-    $scoreStmt = $pdo->prepare('INSERT INTO scores (user_id, value, created_at) VALUES (?, ?, NOW())');
-    $postStmt = $pdo->prepare('INSERT INTO posts (user_id, type, body, score_id, created_at) VALUES (?, ?, ?, ?, NOW())');
-    $postIds = [];
-    foreach ($posts as $p) {
-        $uid = $userIds[$p['user']];
-        if ($p['type'] === 'score') {
-            $scoreStmt->execute([$uid, $p['score']]);
-            $scoreId = $pdo->lastInsertId();
-            $postStmt->execute([$uid, 'score', $p['body'], $scoreId]);
-        } else {
-            $postStmt->execute([$uid, 'text', $p['body'], null]);
-        }
-        $postIds[] = $pdo->lastInsertId();
+$env = env('APP_ENV', 'local');
+if ($env === 'production') {
+    fwrite(STDERR, "Seeding is disabled in production.\n");
+    exit(1);
+}
+
+$db = db_connect();
+
+$class = null;
+foreach ($argv as $arg) {
+    if (str_starts_with($arg, '--class=')) {
+        $class = substr($arg, 8);
     }
+}
 
-    // Add some likes
-    $likeStmt = $pdo->prepare('INSERT IGNORE INTO post_reactions (post_id, user_id, type, created_at) VALUES (?, ?, "like", NOW())');
-    $likeStmt->execute([$postIds[0], $userIds[1]]);
-    $likeStmt->execute([$postIds[0], $userIds[2]]);
-    $likeStmt->execute([$postIds[1], $userIds[0]]);
-    $likeStmt->execute([$postIds[2], $userIds[0]]);
-    $likeStmt->execute([$postIds[2], $userIds[1]]);
-
-    // Add some comments
-    $commentStmt = $pdo->prepare('INSERT INTO post_comments (post_id, user_id, body, created_at) VALUES (?, ?, ?, NOW())');
-    $commentStmt->execute([$postIds[0], $userIds[1], 'Awesome!']);
-    $commentStmt->execute([$postIds[0], $userIds[2], 'Welcome!']);
-    $commentStmt->execute([$postIds[1], $userIds[0], 'Great score!']);
-    $commentStmt->execute([$postIds[2], $userIds[1], 'Good luck!']);
+try {
+    if ($class) {
+        if (!class_exists($class)) {
+            fwrite(STDERR, "Seeder class not found: $class\n");
+            exit(1);
+        }
+        $seeder = new $class();
+        if (!($seeder instanceof Seeder)) {
+            fwrite(STDERR, "$class is not a Seeder.\n");
+            exit(1);
+        }
+        echo "Running seeder: $class\n";
+        $db->beginTransaction();
+        $seeder->run($db);
+        $db->commit();
+        echo "[OK] $class\n";
+    } else {
+        echo "Running DatabaseSeeder...\n";
+        $db->beginTransaction();
+        (new DatabaseSeeder())->run($db);
+        $db->commit();
+        echo "[OK] DatabaseSeeder\n";
+    }
+} catch (Throwable $e) {
+    $db->rollBack();
+    fwrite(STDERR, "[FAIL] " . $e->getMessage() . "\n");
+    exit(1);
+}

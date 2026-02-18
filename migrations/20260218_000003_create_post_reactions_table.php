@@ -1,15 +1,21 @@
 <?php
-// 20260218_000003_create_post_reactions.php
-// Migration: Create post_reactions table for social feed
+// 20260218_000003_create_post_reactions_table.php
 
-return [
-    'up' => function($pdo) {
-        $pdo->exec('
+declare(strict_types=1);
+
+use App\Database\Migration;
+use PDO;
+
+final class CreatePostReactionsTable extends Migration
+{
+    public function up(PDO $db): void
+    {
+        $db->exec(<<<SQL
             CREATE TABLE IF NOT EXISTS post_reactions (
                 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                 post_id INT UNSIGNED NOT NULL,
                 user_id INT UNSIGNED NOT NULL,
-                type ENUM(\'like\') NOT NULL,
+                type ENUM('like') NOT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 CONSTRAINT fk_post_reactions_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
                 CONSTRAINT fk_post_reactions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -17,9 +23,10 @@ return [
                 INDEX idx_post_reactions_post_id (post_id),
                 INDEX idx_post_reactions_user_id (user_id)
             ) CHARACTER SET utf8mb4 ENGINE=InnoDB;
-        ');
-    },
-    'down' => function($pdo) {
-        $pdo->exec('DROP TABLE IF EXISTS post_reactions;');
+        SQL);
     }
-];
+    public function down(PDO $db): void
+    {
+        $db->exec('DROP TABLE IF EXISTS post_reactions;');
+    }
+}

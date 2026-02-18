@@ -1,10 +1,16 @@
 <?php
-// 20260218_000004_create_post_comments.php
-// Migration: Create post_comments table for social feed
+// 20260218_000004_create_post_comments_table.php
 
-return [
-    'up' => function($pdo) {
-        $pdo->exec('
+declare(strict_types=1);
+
+use App\Database\Migration;
+use PDO;
+
+final class CreatePostCommentsTable extends Migration
+{
+    public function up(PDO $db): void
+    {
+        $db->exec(<<<SQL
             CREATE TABLE IF NOT EXISTS post_comments (
                 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                 post_id INT UNSIGNED NOT NULL,
@@ -17,9 +23,10 @@ return [
                 INDEX idx_post_comments_user_id (user_id),
                 INDEX idx_post_comments_created_at_id (created_at DESC, id DESC)
             ) CHARACTER SET utf8mb4 ENGINE=InnoDB;
-        ');
-    },
-    'down' => function($pdo) {
-        $pdo->exec('DROP TABLE IF EXISTS post_comments;');
+        SQL);
     }
-];
+    public function down(PDO $db): void
+    {
+        $db->exec('DROP TABLE IF EXISTS post_comments;');
+    }
+}
