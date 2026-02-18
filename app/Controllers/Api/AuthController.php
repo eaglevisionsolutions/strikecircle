@@ -36,4 +36,15 @@ class AuthController {
         ]);
         echo json_encode(['success'=>true,'data'=>['access_token'=>$accessToken]]);
     }
+    public static function logout() {
+        // Remove refresh token cookie
+        setcookie('refresh_token', '', [
+            'expires' => time() - 3600,
+            'httponly' => true,
+            'samesite' => 'Lax',
+            'path' => '/api/v1/auth/refresh',
+        ]);
+        header('Content-Type: application/json');
+        echo json_encode(['success'=>true, 'data'=>[]]);
+    }
 }
