@@ -8,6 +8,8 @@
 .env.production
 .env.*
 !.env.example
+Dockerfile
+.dockerignore
 
 # ==========================================
 # Server / Apache / Nginx Local Config
