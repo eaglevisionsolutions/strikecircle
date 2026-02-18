@@ -33,36 +33,13 @@ if ($uri === '/login') {
         exit;
 }
 if ($uri === '/dashboard') {
-        require_once __DIR__ . '/../app/Middleware/Auth.php';
-        $user = Auth::requireAuth();
-        $title = 'Dashboard';
-        ob_start();
-        ?>
-        <div class="card">
-            <h2>Dashboard</h2>
-            <p>Logged in as <b><?= htmlspecialchars($user['username']) ?></b></p>
-            <form id="logoutForm"><button type="submit">Logout</button></form>
-            <div id="logoutMsg" style="color:green;"></div>
-        </div>
-        <script>
-        $(function() {
-            $('#logoutForm').on('submit', function(e) {
-                e.preventDefault();
-                $.ajax({
-                    url: '/api/v1/auth/logout',
-                    method: 'POST',
-                    success: function() {
-                        localStorage.removeItem('access_token');
-                        window.location.href = '/login';
-                    }
-                });
-            });
-        });
-        </script>
-        <?php
-        $content = ob_get_clean();
-        include __DIR__ . '/../app/Views/layouts/base.php';
-        exit;
+    require_once __DIR__ . '/../app/Middleware/Auth.php';
+    $user = Auth::requireAuth();
+    ob_start();
+    include __DIR__ . '/../app/Views/dashboard.php';
+    $content = ob_get_clean();
+    include __DIR__ . '/../app/Views/layouts/base.php';
+    exit;
 }
 // ...other web routes...
 http_response_code(404);
