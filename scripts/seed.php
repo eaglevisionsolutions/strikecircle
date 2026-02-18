@@ -7,8 +7,9 @@ declare(strict_types=1);
 
 use App\Database\Seeder;
 
-require_once __DIR__ . '/../app/Config/env.php';
-require_once __DIR__ . '/../app/Config/database.php';
+
+use App\Config\env;
+use App\Config\db_connect;
 
 // Autoload seeders (no Composer)
 spl_autoload_register(function ($class) {

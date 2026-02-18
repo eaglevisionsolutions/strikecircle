@@ -1,5 +1,5 @@
 <?php
-// app/Models/CommentModel.php
+namespace App\Models;
 // Handles DB operations for post comments
 
 class CommentModel {

@@ -1,5 +1,6 @@
 <?php
-require __DIR__ . '/../app/config/env.php';
+use App\Config\env;
+use App\Config\db_connect;
 
 $host = env('DB_HOST', 'db');
 $port = env('DB_PORT', '3306');

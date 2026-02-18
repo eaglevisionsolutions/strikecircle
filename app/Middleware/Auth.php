@@ -1,7 +1,8 @@
 <?php
-// Auth middleware for protected routes
-require_once __DIR__ . '/../Services/JWTService.php';
-require_once __DIR__ . '/../Config/database.php';
+namespace App\Middleware;
+
+use App\Config\db_connect;
+use App\Services\JWTService;
 
 class Auth {
     public static function user() {

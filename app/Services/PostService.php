@@ -1,7 +1,8 @@
 <?php
-// app/Services/PostService.php
-require_once __DIR__ . '/../Models/PostModel.php';
-require_once __DIR__ . '/../Models/ScoreModel.php'; // assumed to exist
+namespace App\Services;
+
+use App\Models\PostModel;
+// use App\Models\ScoreModel; // Uncomment if ScoreModel exists and is namespaced
 
 class PostService {
     private $pdo;

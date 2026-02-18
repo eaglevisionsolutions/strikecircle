@@ -1,6 +1,9 @@
 <?php
-// Database connection using PDO
+namespace App\Config;
+
 require_once __DIR__ . '/env.php';
+
+use PDO;
 
 function db_connect(): PDO {
     static $pdo = null;

@@ -1,4 +1,5 @@
 <?php
+namespace App\Config;
 declare(strict_types=1);
 
 /**

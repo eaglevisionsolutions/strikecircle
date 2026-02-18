@@ -1,10 +1,14 @@
 <?php
-// app/Controllers/Api/PostsController.php
-require_once __DIR__ . '/../../../Config/database.php';
-require_once __DIR__ . '/../../../Services/PostService.php';
-require_once __DIR__ . '/../../../Middleware/Auth.php';
+namespace App\Controllers\Api;
+
+use App\Config\db_connect;
+use App\Services\PostService;
+use App\Middleware\Auth;
 
 class PostsController {
+    public static function require_auth() {
+        return Auth::requireAuth();
+    }
     public static function handle($method, $id = null) {
         $pdo = db_connect();
         $user = require_auth();

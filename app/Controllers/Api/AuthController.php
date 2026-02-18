@@ -1,7 +1,8 @@
 <?php
-// /api/v1/auth/login endpoint
-require_once __DIR__ . '/../../../Services/JWTService.php';
-require_once __DIR__ . '/../../../Config/database.php';
+namespace App\Controllers\Api;
+
+use App\Config\db_connect;
+use App\Services\JWTService;
 
 class AuthController {
     public static function login() {

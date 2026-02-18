@@ -1,5 +1,5 @@
 <?php
-// app/Models/ReactionModel.php
+namespace App\Models;
 // Handles DB operations for post reactions
 
 class ReactionModel {

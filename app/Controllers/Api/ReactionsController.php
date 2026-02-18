@@ -1,10 +1,14 @@
 <?php
-// app/Controllers/Api/ReactionsController.php
-require_once __DIR__ . '/../../../Config/database.php';
-require_once __DIR__ . '/../../../Services/ReactionService.php';
-require_once __DIR__ . '/../../../Middleware/Auth.php';
+namespace App\Controllers\Api;
+
+use App\Config\db_connect;
+use App\Services\ReactionService;
+use App\Middleware\Auth;
 
 class ReactionsController {
+    public static function require_auth() {
+        return Auth::requireAuth();
+    }
     public static function handle($method, $postId, $type = null) {
         $pdo = db_connect();
         $user = require_auth();

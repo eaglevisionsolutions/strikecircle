@@ -1,6 +1,7 @@
 <?php
-// app/Services/CommentService.php
-require_once __DIR__ . '/../Models/CommentModel.php';
+namespace App\Services;
+
+use App\Models\CommentModel;
 
 class CommentService {
     private $commentModel;

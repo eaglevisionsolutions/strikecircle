@@ -1,10 +1,14 @@
 <?php
-// app/Controllers/Api/CommentsController.php
-require_once __DIR__ . '/../../../Config/database.php';
-require_once __DIR__ . '/../../../Services/CommentService.php';
-require_once __DIR__ . '/../../../Middleware/Auth.php';
+namespace App\Controllers\Api;
+
+use App\Config\db_connect;
+use App\Services\CommentService;
+use App\Middleware\Auth;
 
 class CommentsController {
+    public static function require_auth() {
+        return Auth::requireAuth();
+    }
     public static function handle($method, $postId = null, $commentId = null) {
         $pdo = db_connect();
         $user = require_auth();

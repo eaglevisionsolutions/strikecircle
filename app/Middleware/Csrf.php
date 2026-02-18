@@ -1,4 +1,5 @@
 <?php
+namespace App\Middleware;
 // Minimal CSRF middleware (for cookie-based flows)
 class Csrf {
     public static function token() {

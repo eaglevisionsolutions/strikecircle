@@ -1,5 +1,5 @@
 <?php
-// app/Models/PostModel.php
+namespace App\Models;
 // Handles DB operations for posts
 
 class PostModel {

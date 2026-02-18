@@ -2,7 +2,8 @@
 // Migration runner for StrikeCircle
 // Usage: php scripts/migrate.php
 
-require_once __DIR__ . '/../app/Config/database.php';
+
+use App\Config\db_connect;
 
 $pdo = db_connect();
 

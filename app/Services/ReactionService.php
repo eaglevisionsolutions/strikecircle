@@ -1,6 +1,7 @@
 <?php
-// app/Services/ReactionService.php
-require_once __DIR__ . '/../Models/ReactionModel.php';
+namespace App\Services;
+
+use App\Models\ReactionModel;
 
 class ReactionService {
     private $reactionModel;

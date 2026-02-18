@@ -1,13 +1,16 @@
 <?php
+namespace App\Services;
 // JWT Service for StrikeCircle
 // Usage: JWTService::encode($payload), JWTService::decode($jwt)
+use App\Config\env;
+
 class JWTService {
     private static $algo = 'HS256';
     private static $secret;
 
     private static function getSecret() {
         if (!self::$secret) {
-            require_once __DIR__ . '/../Config/env.php';
+            use App\Config\env;
             self::$secret = env('JWT_SECRET', 'changeme');
         }
         return self::$secret;
