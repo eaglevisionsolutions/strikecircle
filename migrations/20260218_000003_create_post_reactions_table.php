@@ -4,7 +4,6 @@
 declare(strict_types=1);
 
 use App\Database\Migration;
-use PDO;
 
 final class CreatePostReactionsTable extends Migration
 {
@@ -12,9 +11,9 @@ final class CreatePostReactionsTable extends Migration
     {
         $db->exec(<<<SQL
             CREATE TABLE IF NOT EXISTS post_reactions (
-                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                post_id INT UNSIGNED NOT NULL,
-                user_id INT UNSIGNED NOT NULL,
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                post_id INT NOT NULL,
+                user_id INT NOT NULL,
                 type ENUM('like', 'love', 'laugh', 'wow', 'sad', 'angry') NOT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 CONSTRAINT fk_post_reactions_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,

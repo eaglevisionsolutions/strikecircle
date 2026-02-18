@@ -1,6 +1,7 @@
 <?php
-namespace App\Config;
 declare(strict_types=1);
+namespace App\Config;
+
 
 use PDO;
 use PDOException;
@@ -12,11 +13,12 @@ use PDOException;
 class DB {
     public static function connect(): PDO
     {
-        $host = Env::get('DB_HOST', 'localhost');
+        // Prefer new-style keys, fallback to legacy ones, with Docker-friendly defaults
+        $host = Env::get('DB_HOST', 'db');
         $port = Env::get('DB_PORT', '3306');
-        $db   = Env::get('DB_DATABASE', 'strikecircle');
-        $user = Env::get('DB_USERNAME', 'root');
-        $pass = Env::get('DB_PASSWORD', '');
+        $db   = Env::get('DB_DATABASE', Env::get('DB_NAME', 'strikecircle'));
+        $user = Env::get('DB_USERNAME', Env::get('DB_USER', 'root'));
+        $pass = Env::get('DB_PASSWORD', Env::get('DB_PASS', ''));
         $charset = Env::get('DB_CHARSET', 'utf8mb4');
         $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
         try {

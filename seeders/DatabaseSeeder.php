@@ -4,7 +4,6 @@
 declare(strict_types=1);
 
 use App\Database\Seeder;
-use PDO;
 
 final class DatabaseSeeder extends Seeder
 {
@@ -24,22 +23,23 @@ final class DatabaseSeeder extends Seeder
         }
         $db->exec('SET FOREIGN_KEY_CHECKS=1');
 
-        // Run all seeders in logical order
-        (new UserSeeder())->run($db);
-        (new FriendSeeder())->run($db);
-        (new ScoreSeeder())->run($db);
-        (new PostSeeder())->run($db);
-        (new ReactionSeeder())->run($db);
-        (new CommentSeeder())->run($db);
-        (new LeagueSeeder())->run($db);
-        (new TournamentSeeder())->run($db);
-        (new MessageSeeder())->run($db);
+        // Run seeders only if their tables exist
+        if ($this->tableExists($db, 'users')) (new UserSeeder())->run($db);
+        if ($this->tableExists($db, 'friends')) (new FriendSeeder())->run($db);
+        if ($this->tableExists($db, 'scores')) (new ScoreSeeder())->run($db);
+        if ($this->tableExists($db, 'posts')) (new PostSeeder())->run($db);
+        if ($this->tableExists($db, 'post_reactions')) (new ReactionSeeder())->run($db);
+        if ($this->tableExists($db, 'post_comments')) (new CommentSeeder())->run($db);
+        if ($this->tableExists($db, 'leagues')) (new LeagueSeeder())->run($db);
+        if ($this->tableExists($db, 'tournaments')) (new TournamentSeeder())->run($db);
+        if ($this->tableExists($db, 'messages')) (new MessageSeeder())->run($db);
     }
 
     private function tableExists(PDO $db, string $table): bool
     {
-        $stmt = $db->prepare('SHOW TABLES LIKE ?');
-        $stmt->execute([$table]);
-        return (bool)$stmt->fetchColumn();
+        // MySQL/MariaDB do not allow preparing SHOW statements; quote and query instead
+        $like = $db->quote($table);
+        $stmt = $db->query("SHOW TABLES LIKE $like");
+        return $stmt !== false && (bool)$stmt->fetchColumn();
     }
 }

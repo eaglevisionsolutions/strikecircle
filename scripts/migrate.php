@@ -24,7 +24,21 @@ foreach ($migrationFiles as $file) {
     $name = basename($file);
     if (in_array($name, $applied)) continue;
     echo "Applying $name... ";
+    $before = get_declared_classes();
     require $file;
+    $after = get_declared_classes();
+    $new = array_diff($after, $before);
+    $ran = false;
+    foreach ($new as $cls) {
+        if (is_subclass_of($cls, \App\Database\Migration::class)) {
+            $migration = new $cls();
+            $migration->up($pdo);
+            $ran = true;
+        }
+    }
+    if (!$ran) {
+        echo "(no Migration class found) ";
+    }
     $pdo->prepare("INSERT INTO migrations (migration) VALUES (?)")->execute([$name]);
     echo "done.\n";
 }

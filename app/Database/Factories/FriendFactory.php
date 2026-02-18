@@ -21,11 +21,17 @@ class FriendFactory extends Factory
         ];
     }
 
-    public function create(array $overrides = []): int
+    public function make(array $overrides = []): array
     {
-        $data = $this->definition($overrides);
+        return $this->definition($overrides);
+    }
+
+    public function create(array $overrides = []): array
+    {
+        $data = $this->make($overrides);
         $stmt = $this->db->prepare('INSERT INTO friends (user1_id, user2_id, created_at) VALUES (?, ?, ?)');
         $stmt->execute([$data['user1_id'], $data['user2_id'], $data['created_at']]);
-        return (int)$this->db->lastInsertId();
+        $data['id'] = (int)$this->db->lastInsertId();
+        return $data;
     }
 }

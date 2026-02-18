@@ -6,7 +6,6 @@ declare(strict_types=1);
 use App\Database\Seeder;
 use App\Database\Faker\SeededRandom;
 use App\Database\Factories\FriendFactory;
-use PDO;
 
 final class FriendSeeder extends Seeder
 {

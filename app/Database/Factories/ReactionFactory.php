@@ -22,11 +22,24 @@ class ReactionFactory extends Factory
         ];
     }
 
-    public function create(array $overrides = []): int
+    public function make(array $overrides = []): array
     {
-        $data = $this->definition($overrides);
-        $stmt = $this->db->prepare('INSERT INTO post_reactions (post_id, user_id, type, created_at) VALUES (?, ?, ?, ?)');
+        return $this->definition($overrides);
+    }
+
+    public function create(array $overrides = []): array
+    {
+        $data = $this->make($overrides);
+        $stmt = $this->db->prepare('INSERT IGNORE INTO post_reactions (post_id, user_id, type, created_at) VALUES (?, ?, ?, ?)');
         $stmt->execute([$data['post_id'], $data['user_id'], $data['type'], $data['created_at']]);
-        return (int)$this->db->lastInsertId();
+        if ($stmt->rowCount() > 0) {
+            $data['id'] = (int)$this->db->lastInsertId();
+        } else {
+            // On duplicate (ignored), fetch existing id for completeness
+            $q = $this->db->prepare('SELECT id FROM post_reactions WHERE post_id = ? AND user_id = ? AND type = ? LIMIT 1');
+            $q->execute([$data['post_id'], $data['user_id'], $data['type']]);
+            $data['id'] = (int)($q->fetchColumn() ?: 0);
+        }
+        return $data;
     }
 }

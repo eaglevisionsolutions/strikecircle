@@ -4,7 +4,8 @@
 declare(strict_types=1);
 
 use App\Database\Seeder;
-use PDO;
+use App\Database\Faker\SeededRandom;
+use App\Database\Factories\PostFactory;
 
 final class PostSeeder extends Seeder
 {

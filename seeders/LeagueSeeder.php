@@ -6,7 +6,6 @@ declare(strict_types=1);
 use App\Database\Seeder;
 use App\Database\Faker\SeededRandom;
 use App\Database\Factories\LeagueFactory;
-use PDO;
 
 final class LeagueSeeder extends Seeder
 {

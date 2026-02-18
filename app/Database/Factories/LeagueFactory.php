@@ -18,11 +18,17 @@ class LeagueFactory extends Factory
         ];
     }
 
-    public function create(array $overrides = []): int
+    public function make(array $overrides = []): array
     {
-        $data = $this->definition($overrides);
+        return $this->definition($overrides);
+    }
+
+    public function create(array $overrides = []): array
+    {
+        $data = $this->make($overrides);
         $stmt = $this->db->prepare('INSERT INTO leagues (name, location, created_at) VALUES (?, ?, ?)');
         $stmt->execute([$data['name'], $data['location'], $data['created_at']]);
-        return (int)$this->db->lastInsertId();
+        $data['id'] = (int)$this->db->lastInsertId();
+        return $data;
     }
 }

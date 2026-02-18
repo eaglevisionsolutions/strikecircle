@@ -1,10 +1,7 @@
-
 <?php
+declare(strict_types=1);
 // scripts/seed.php
 // Laravel-style seeder runner for StrikeCircle
-
-declare(strict_types=1);
-
 use App\Database\Seeder;
 
 
@@ -41,6 +38,7 @@ function truncateAllTables(PDO $db): void {
     $tables = $db->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
     $db->exec('SET FOREIGN_KEY_CHECKS=0');
     foreach ($tables as $table) {
+        if ($table === 'migrations') continue; // preserve migration history
         $db->exec("TRUNCATE TABLE `$table`");
     }
     $db->exec('SET FOREIGN_KEY_CHECKS=1');
@@ -62,19 +60,30 @@ try {
             exit(1);
         }
         echo "Running seeder: $class\n";
-        $db->beginTransaction();
+        if (method_exists($db, 'inTransaction') && !$db->inTransaction()) {
+            $db->beginTransaction();
+        }
         $seeder->run($db);
-        $db->commit();
+        if (method_exists($db, 'inTransaction') && $db->inTransaction()) {
+            $db->commit();
+        }
         echo "[OK] $class\n";
     } else {
         echo "Running DatabaseSeeder...\n";
-        $db->beginTransaction();
+        if (method_exists($db, 'inTransaction') && !$db->inTransaction()) {
+            $db->beginTransaction();
+        }
         (new DatabaseSeeder())->run($db);
-        $db->commit();
+        if (method_exists($db, 'inTransaction') && $db->inTransaction()) {
+            $db->commit();
+        }
         echo "[OK] DatabaseSeeder\n";
     }
 } catch (Throwable $e) {
-    $db->rollBack();
-    fwrite(STDERR, "[FAIL] " . $e->getMessage() . "\n");
+    if (isset($db) && method_exists($db, 'inTransaction') && $db->inTransaction()) {
+        $db->rollBack();
+    }
+    fwrite(STDERR, "[FAIL] " . get_class($e) . " (" . $e->getCode() . "): " . $e->getMessage() . "\n");
+    fwrite(STDERR, $e->getTraceAsString() . "\n");
     exit(1);
 }

@@ -20,11 +20,17 @@ class CommentFactory extends Factory
         ];
     }
 
-    public function create(array $overrides = []): int
+    public function make(array $overrides = []): array
     {
-        $data = $this->definition($overrides);
+        return $this->definition($overrides);
+    }
+
+    public function create(array $overrides = []): array
+    {
+        $data = $this->make($overrides);
         $stmt = $this->db->prepare('INSERT INTO post_comments (post_id, user_id, body, created_at) VALUES (?, ?, ?, ?)');
         $stmt->execute([$data['post_id'], $data['user_id'], $data['body'], $data['created_at']]);
-        return (int)$this->db->lastInsertId();
+        $data['id'] = (int)$this->db->lastInsertId();
+        return $data;
     }
 }
