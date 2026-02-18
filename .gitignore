@@ -13,6 +13,7 @@
 apache.conf
 nginx.conf
 vhost.conf
+phpinfo.php
 
 # ==========================================
 # Logs
