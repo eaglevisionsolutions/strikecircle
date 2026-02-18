@@ -10,7 +10,7 @@ class FeedController {
         return Auth::requireAuth();
     }
     public static function handle($method) {
-        $pdo = db_connect();
+        $pdo = \App\Config\DB::connect();
         $user = require_auth();
         $service = new PostService($pdo);
         if ($method === 'GET') {

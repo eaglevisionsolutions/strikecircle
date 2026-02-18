@@ -6,20 +6,21 @@ declare(strict_types=1);
  * Robust environment loader for CLI and web
  * Loads .env (always), then .env.<env> (local, staging, production) if APP_ENV is set
  * Priority: .env < .env.<env> (higher wins)
- * Usage: env('KEY', 'default')
+ * Usage: Env::get('KEY', 'default')
  */
 
-if (!function_exists('env')) {
-    function env(string $key, mixed $default = null): mixed
+class Env {
+    protected static ?array $vars = null;
+
+    public static function get(string $key, mixed $default = null): mixed
     {
-        static $vars = null;
-        if ($vars === null) {
-            $vars = [];
+        if (self::$vars === null) {
+            self::$vars = [];
             $root = realpath(__DIR__ . '/../../');
             if ($root === false) $root = __DIR__ . '/../../';
 
             // Always load .env first (lowest priority)
-            $loadFile = function (string $path) use (&$vars): void {
+            $loadFile = function (string $path) {
                 if (!is_file($path) || !is_readable($path)) return;
                 $lines = file($path, FILE_IGNORE_NEW_LINES);
                 if ($lines === false) return;
@@ -35,20 +36,20 @@ if (!function_exists('env')) {
                     if ((strlen($v) >= 2) && (($v[0] === '"' && $v[strlen($v) - 1] === '"') || ($v[0] === "'" && $v[strlen($v) - 1] === "'"))) {
                         $v = substr($v, 1, -1);
                     }
-                    $vars[$k] = $v;
+                    self::$vars[$k] = $v;
                 }
             };
 
             $loadFile($root . '/.env');
 
             // Determine env (default local)
-            $env = $vars['APP_ENV'] ?? getenv('APP_ENV') ?: 'local';
+            $env = self::$vars['APP_ENV'] ?? getenv('APP_ENV') ?: 'local';
             $envFile = $root . '/.env.' . $env;
             if (is_file($envFile)) {
                 $loadFile($envFile);
             }
         }
-        return $vars[$key] ?? $default;
+        return self::$vars[$key] ?? $default;
     }
 }
                         $v = substr($v, 1, -1);

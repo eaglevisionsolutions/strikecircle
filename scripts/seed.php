@@ -8,8 +8,6 @@ declare(strict_types=1);
 use App\Database\Seeder;
 
 
-use App\Config\env;
-use App\Config\db_connect;
 
 // Autoload seeders (no Composer)
 spl_autoload_register(function ($class) {
@@ -25,13 +23,13 @@ foreach (glob(__DIR__ . '/../seeders/*.php') as $file) {
     require_once $file;
 }
 
-$env = env('APP_ENV', 'local');
+$env = \App\Config\Env::get('APP_ENV', 'local');
 if ($env === 'production') {
     fwrite(STDERR, "Seeding is disabled in production.\n");
     exit(1);
 }
 
-$db = db_connect();
+$db = \App\Config\DB::connect();
 
 
 $class = null;

@@ -18,34 +18,37 @@ function db_connect(): PDO {
 
     $dsn = "mysql:host={$host};port={$port};dbname={$db};charset={$charset}";
 
-    $options = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ];
+    <?php
+    namespace App\Config;
+    declare(strict_types=1);
 
-    try {
-        $pdo = new PDO($dsn, $user, $pass, $options);
-        return $pdo;
-    } catch (\Throwable $e) {
-        $msg = 'Database connection failed: ' . $e->getMessage();
+    use PDO;
+    use PDOException;
 
-        // CLI migrations: print error
-        if (PHP_SAPI === 'cli') {
-            fwrite(STDERR, $msg . PHP_EOL);
-            exit(1);
+    /**
+     * Returns a PDO connection using Env config
+     * Usage: DB::connect()
+     */
+
+    class DB {
+        public static function connect(): PDO
+        {
+            $host = Env::get('DB_HOST', 'localhost');
+            $port = Env::get('DB_PORT', '3306');
+            $db   = Env::get('DB_DATABASE', 'strikecircle');
+            $user = Env::get('DB_USERNAME', 'root');
+            $pass = Env::get('DB_PASSWORD', '');
+            $charset = Env::get('DB_CHARSET', 'utf8mb4');
+            $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
+            try {
+                $pdo = new PDO($dsn, $user, $pass, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]);
+                return $pdo;
+            } catch (PDOException $e) {
+                throw new PDOException('Database connection failed: ' . $e->getMessage(), (int)$e->getCode());
+            }
         }
-
-        // Web/API: JSON error response
-        http_response_code(500);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode([
-            'success' => false,
-            'error' => [
-                'code' => 'DB_CONN_ERROR',
-                'message' => 'Database connection failed.',
-            ],
-        ]);
-        exit;
     }
-}

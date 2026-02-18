@@ -13,7 +13,7 @@ class AuthController {
             echo json_encode(['success'=>false,'error'=>['code'=>'INVALID_INPUT','message'=>'Email and password required.']]);
             return;
         }
-        $pdo = db_connect();
+        $pdo = \App\Config\DB::connect();
         $stmt = $pdo->prepare('SELECT id, email, password FROM users WHERE email = ? LIMIT 1');
         $stmt->execute([$input['email']]);
         $user = $stmt->fetch();

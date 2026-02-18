@@ -10,7 +10,7 @@ class CommentsController {
         return Auth::requireAuth();
     }
     public static function handle($method, $postId = null, $commentId = null) {
-        $pdo = db_connect();
+        $pdo = \App\Config\DB::connect();
         $user = require_auth();
         $service = new CommentService($pdo);
         if ($method === 'GET' && $postId) {

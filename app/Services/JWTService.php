@@ -10,8 +10,7 @@ class JWTService {
 
     private static function getSecret() {
         if (!self::$secret) {
-            use App\Config\env;
-            self::$secret = env('JWT_SECRET', 'changeme');
+            self::$secret = \App\Config\Env::get('JWT_SECRET', 'changeme');
         }
         return self::$secret;
     }

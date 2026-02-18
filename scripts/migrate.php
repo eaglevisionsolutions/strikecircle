@@ -1,11 +1,10 @@
+
 <?php
 // Migration runner for StrikeCircle
 // Usage: php scripts/migrate.php
 
 
-use App\Config\db_connect;
-
-$pdo = db_connect();
+$pdo = \App\Config\DB::connect();
 
 $migrationsDir = __DIR__ . '/../migrations';
 if (!is_dir($migrationsDir)) die("Migrations directory not found.\n");

@@ -12,7 +12,7 @@ class Auth {
             $jwt = $matches[1];
             $payload = JWTService::decode($jwt);
             if ($payload && isset($payload['uid'])) {
-                $pdo = db_connect();
+                $pdo = \App\Config\DB::connect();
                 $stmt = $pdo->prepare('SELECT id, email, username FROM users WHERE id = ? LIMIT 1');
                 $stmt->execute([$payload['uid']]);
                 $user = $stmt->fetch();

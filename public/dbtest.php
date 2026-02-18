@@ -1,12 +1,10 @@
 <?php
-use App\Config\env;
-use App\Config\db_connect;
 
-$host = env('DB_HOST', 'db');
-$port = env('DB_PORT', '3306');
-$name = env('DB_NAME', 'strikecircle');
-$user = env('DB_USER', 'root');
-$pass = env('DB_PASS', 'root');
+$host = \App\Config\Env::get('DB_HOST', 'db');
+$port = \App\Config\Env::get('DB_PORT', '3306');
+$name = \App\Config\Env::get('DB_NAME', 'strikecircle');
+$user = \App\Config\Env::get('DB_USER', 'root');
+$pass = \App\Config\Env::get('DB_PASS', 'root');
 
 $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
 

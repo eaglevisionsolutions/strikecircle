@@ -10,7 +10,7 @@ class ReactionsController {
         return Auth::requireAuth();
     }
     public static function handle($method, $postId, $type = null) {
-        $pdo = db_connect();
+        $pdo = \App\Config\DB::connect();
         $user = require_auth();
         $service = new ReactionService($pdo);
         if ($method === 'POST' && !$type) {
