@@ -105,7 +105,7 @@ Please contact the maintainer before submitting significant changes.
 ## 📫 Contact
 
 For business inquiries or collaboration:
-[Add your contact email here]
+info@eaglevisionsolutions.ca
 
 ---
 
