@@ -1,64 +1,101 @@
 <?php
-// Simple environment loader
-// Usage: env('KEY', 'default')
+declare(strict_types=1);
+
+/**
+ * Simple environment loader
+ * - Loads <project-root>/.env then <project-root>/.env.<APP_ENV>
+ * - APP_ENV defaults to "local" (so it will load .env.local)
+ * - Usage: env('KEY', 'default')
+ */
 
 if (!function_exists('env')) {
 
-    function env_load_file(string $envPath, array &$vars): void
+    function env(string $key, mixed $default = null): mixed
     {
-        if (!file_exists($envPath)) return;
-
-        foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-            $line = trim($line);
-            if ($line === '' || str_starts_with($line, '#')) continue;
-
-            // allow: export KEY=VALUE
-            if (str_starts_with($line, 'export ')) {
-                $line = trim(substr($line, 7));
-            }
-
-            $parts = explode('=', $line, 2);
-            $k = trim($parts[0] ?? '');
-            $v = trim($parts[1] ?? '');
-
-            if ($k === '') continue;
-
-            // strip optional quotes
-            if ((str_starts_with($v, '"') && str_ends_with($v, '"')) ||
-                (str_starts_with($v, "'") && str_ends_with($v, "'"))) {
-                $v = substr($v, 1, -1);
-            }
-
-            $vars[$k] = $v;
-        }
-    }
-
-    function env($key, $default = null) {
         static $vars = null;
 
         if ($vars === null) {
             $vars = [];
 
-            // Project root (two levels up from config/)
+            // app/config -> project root (strikecircle)
             $root = realpath(__DIR__ . '/../../');
+            if ($root === false) {
+                $root = __DIR__ . '/../../';
+            }
 
-            // 1) Load base .env first
-            env_load_file($root . '/.env', $vars);
+            // Helper to load a single .env file into $vars
+            $loadFile = function (string $path) use (&$vars): void {
+                if (!is_file($path) || !is_readable($path)) {
+                    return;
+                }
 
-            // 2) Decide environment (APP_ENV can be set in .env or container env)
-            $appEnv = $vars['APP_ENV'] ?? getenv('APP_ENV') ?: 'local';
+                $lines = file($path, FILE_IGNORE_NEW_LINES);
+                if ($lines === false) return;
 
-            // 3) Load override file based on APP_ENV
-            // Your convention: .env.local, .env.staging, .env.production
-            $override = match ($appEnv) {
-                'local'      => $root . '/.env.local',
-                'staging'    => $root . '/.env.staging',
-                'production' => $root . '/.env.production',
-                default      => null,
+                foreach ($lines as $line) {
+                    $line = trim($line);
+
+                    // Skip empty lines and comments
+                    if ($line === '' || str_starts_with($line, '#')) {
+                        continue;
+                    }
+
+                    // Allow "export KEY=value"
+                    if (str_starts_with($line, 'export ')) {
+                        $line = trim(substr($line, 7));
+                    }
+
+                    // Must contain "="
+                    $pos = strpos($line, '=');
+                    if ($pos === false) continue;
+
+                    $k = trim(substr($line, 0, $pos));
+                    $v = trim(substr($line, $pos + 1));
+
+                    // Remove surrounding quotes
+                    if (
+                        (strlen($v) >= 2) &&
+                        (($v[0] === '"' && $v[strlen($v) - 1] === '"') ||
+                         ($v[0] === "'" && $v[strlen($v) - 1] === "'"))
+                    ) {
+                        $v = substr($v, 1, -1);
+                    }
+
+                    $vars[$k] = $v;
+                }
             };
 
-            if ($override) {
-                env_load_file($override, $vars);
+            // 1) Load base .env (optional)
+            $loadFile($root . '/.env');
+
+            // Determine APP_ENV (env var wins, then .env value, then default)
+            $appEnv = getenv('APP_ENV');
+            if ($appEnv === false || $appEnv === '') {
+                $appEnv = $vars['APP_ENV'] ?? 'local';
+            }
+            $appEnv = strtolower(trim((string)$appEnv));
+
+            // Map environment to filename
+            $suffix = match ($appEnv) {
+                'prod', 'production' => 'production',
+                'stage', 'staging'   => 'staging',
+                default              => 'local',
+            };
+
+            // 2) Load env-specific override
+            $loadFile($root . '/.env.' . $suffix);
+
+            // Expose loaded vars to getenv() consumers too (non-destructive)
+            foreach ($vars as $k => $v) {
+                if (getenv($k) === false) {
+                    putenv($k . '=' . $v);
+                }
+                if (!isset($_ENV[$k])) {
+                    $_ENV[$k] = $v;
+                }
+                if (!isset($_SERVER[$k])) {
+                    $_SERVER[$k] = $v;
+                }
             }
         }
 

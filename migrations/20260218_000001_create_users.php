@@ -1,4 +1,10 @@
 <?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../app/config/database.php';
+
+$pdo = db_connect();
+
 // Migration: create users table
 $pdo->exec("CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
