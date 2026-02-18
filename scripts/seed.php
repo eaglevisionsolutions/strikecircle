@@ -32,14 +32,32 @@ if ($env === 'production') {
 
 $db = db_connect();
 
+
 $class = null;
+$fresh = false;
 foreach ($argv as $arg) {
     if (str_starts_with($arg, '--class=')) {
         $class = substr($arg, 8);
     }
+    if ($arg === '--fresh') {
+        $fresh = true;
+    }
+}
+
+function truncateAllTables(PDO $db): void {
+    $tables = $db->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+    $db->exec('SET FOREIGN_KEY_CHECKS=0');
+    foreach ($tables as $table) {
+        $db->exec("TRUNCATE TABLE `$table`");
+    }
+    $db->exec('SET FOREIGN_KEY_CHECKS=1');
 }
 
 try {
+    if ($fresh) {
+        echo "[--fresh] Truncating all tables...\n";
+        truncateAllTables($db);
+    }
     if ($class) {
         if (!class_exists($class)) {
             fwrite(STDERR, "Seeder class not found: $class\n");

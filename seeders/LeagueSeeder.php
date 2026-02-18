@@ -4,34 +4,33 @@
 declare(strict_types=1);
 
 use App\Database\Seeder;
+use App\Database\Faker\SeededRandom;
+use App\Database\Factories\LeagueFactory;
 use PDO;
 
 final class LeagueSeeder extends Seeder
 {
     public function run(PDO $db): void
     {
-        $users = $db->query('SELECT id FROM users ORDER BY id ASC')->fetchAll(PDO::FETCH_COLUMN);
-        if (count($users) < 3) throw new Exception('Not enough users to seed leagues');
+        $seed = (int)(getenv('SEED_DATA_SEED') ?: 1337);
+        $rand = new SeededRandom($seed + 5000); // Offset for league randomness
+        $factory = new LeagueFactory($db, $rand);
 
-        $leagues = [
-            ['Online Masters', 'online', '-3 days'],
-            ['City Bowlers', 'local', '-2 days'],
-            ['Pin Crushers', 'local', '-1 days'],
-        ];
-        $stmt = $db->prepare('INSERT INTO leagues (name, type, created_at) VALUES (?, ?, ?)');
+        // 3 deterministic leagues
         $leagueIds = [];
-        foreach ($leagues as [$name, $type, $when]) {
-            $created = (new DateTimeImmutable($when))->format('Y-m-d H:i:s');
-            $stmt->execute([$name, $type, $created]);
-            $leagueIds[] = $db->lastInsertId();
+        for ($i = 0; $i < 3; $i++) {
+            $leagueIds[] = $factory->create();
         }
-        // Add members
+
+        // Add all users as members to each league
+        $users = $db->query('SELECT id FROM users ORDER BY id ASC')->fetchAll(PDO::FETCH_COLUMN);
         $memberStmt = $db->prepare('INSERT INTO league_members (league_id, user_id, joined_at) VALUES (?, ?, ?)');
         foreach ($leagueIds as $i => $lid) {
             foreach ($users as $u) {
-                $memberStmt->execute([$lid, $u, (new DateTimeImmutable("-" . ($i+1) . " days"))->format('Y-m-d H:i:s')]);
+                $memberStmt->execute([$lid, $u, (new \DateTimeImmutable("-" . ($i+1) . " days"))->format('Y-m-d H:i:s')]);
             }
         }
+
         // Add league_scores if table exists
         $exists = $db->query("SHOW TABLES LIKE 'league_scores'")->fetchColumn();
         if ($exists) {

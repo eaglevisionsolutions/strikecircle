@@ -24,9 +24,13 @@ final class DatabaseSeeder extends Seeder
         }
         $db->exec('SET FOREIGN_KEY_CHECKS=1');
 
-        // Run all seeders in order
+        // Run all seeders in logical order
         (new UserSeeder())->run($db);
+        (new FriendSeeder())->run($db);
+        (new ScoreSeeder())->run($db);
         (new PostSeeder())->run($db);
+        (new ReactionSeeder())->run($db);
+        (new CommentSeeder())->run($db);
         (new LeagueSeeder())->run($db);
         (new TournamentSeeder())->run($db);
         (new MessageSeeder())->run($db);

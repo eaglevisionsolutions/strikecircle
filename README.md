@@ -76,6 +76,39 @@ The publication of this repository does not grant any license to use, copy, modi
 
 ---
 
+## 📦 Database Seeding & Demo Data
+
+StrikeCircle provides a robust, deterministic seeding system for generating rich demo data for development and UI testing. All seeders use factory classes for realistic, repeatable data.
+
+### Seeding the Database
+
+Run all seeders (recommended for local/dev):
+
+```sh
+php scripts/seed.php
+```
+
+To wipe all tables before seeding (safe for local/dev):
+
+```sh
+php scripts/seed.php --fresh
+```
+
+To run a specific seeder:
+
+```sh
+php scripts/seed.php --class=UserSeeder
+```
+
+> **Note:** Seeding is disabled in production for safety.
+
+### Deterministic Factories
+
+- All demo data is generated using factories with a deterministic random seed (set via `SEED_DATA_SEED` env var).
+- Data is always the same for a given seed, ensuring stable UI and test scenarios.
+- Factories exist for users, posts, scores, friends, reactions, comments, leagues, tournaments, and messages.
+
+---
 ## 📌 Status
 
 StrikeCircle is currently under active development.
