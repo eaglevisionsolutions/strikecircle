@@ -1,12 +1,6 @@
 <?php
-// Simple PSR-4-like autoloader for App\\ classes
-spl_autoload_register(function ($class) {
-    if (str_starts_with($class, 'App\\')) {
-        $path = __DIR__ . '/../' . str_replace('App\\', 'app/', $class) . '.php';
-        $path = str_replace('\\', '/', $path);
-        if (is_file($path)) require_once $path;
-    }
-});
+
+require_once __DIR__ . '/../app/autoload.php';
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 

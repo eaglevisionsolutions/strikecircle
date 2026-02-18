@@ -9,14 +9,8 @@ use App\Database\Seeder;
 
 
 
-// Autoload seeders (no Composer)
-spl_autoload_register(function ($class) {
-    $prefix = 'App\\Database\\Seeders\\';
-    if (str_starts_with($class, $prefix)) {
-        $file = __DIR__ . '/../seeders/' . substr($class, strlen($prefix)) . '.php';
-        if (is_file($file)) require_once $file;
-    }
-});
+
+require_once __DIR__ . '/../app/autoload.php';
 
 // Also load all seeders in /seeders for direct class usage
 foreach (glob(__DIR__ . '/../seeders/*.php') as $file) {

@@ -1,10 +1,10 @@
-
 <?php
+require_once __DIR__ . '/../app/autoload.php';
 // Migration runner for StrikeCircle
 // Usage: php scripts/migrate.php
+use \App\Config\DB;
 
-
-$pdo = \App\Config\DB::connect();
+$pdo = DB::connect();
 
 $migrationsDir = __DIR__ . '/../migrations';
 if (!is_dir($migrationsDir)) die("Migrations directory not found.\n");
@@ -29,3 +29,6 @@ foreach ($migrationFiles as $file) {
     echo "done.\n";
 }
 echo "All migrations applied.\n";
+
+
+
