@@ -11,10 +11,10 @@ class Auth {
         if (preg_match('/Bearer\s(.+)/', $auth, $matches)) {
             $jwt = $matches[1];
             $payload = JWTService::decode($jwt);
-            if ($payload && isset($payload['uid'])) {
+            if ($payload && isset($payload['sub'])) {
                 $pdo = \App\Config\DB::connect();
                 $stmt = $pdo->prepare('SELECT id, email, username FROM users WHERE id = ? LIMIT 1');
-                $stmt->execute([$payload['uid']]);
+                $stmt->execute([$payload['sub']]);
                 $user = $stmt->fetch();
                 if ($user) return $user;
             }

@@ -143,3 +143,44 @@ info@eaglevisionsolutions.ca
 ---
 
 **StrikeCircle — The social network for bowlers.**
+
+---
+
+## 🔐 Auth Setup (API-first)
+
+- Env vars to add (.env or .env.local):
+
+	- `APP_ENV=local`
+	- `APP_DOMAIN=strikecircle.local`
+	- `JWT_SECRET=change_this_secret`
+	- `JWT_ISS=https://strikecircle.local`
+	- `JWT_AUD=strikecircle_app`
+	- `GOOGLE_CLIENT_ID=...`
+	- `GOOGLE_CLIENT_SECRET=...`
+	- `GOOGLE_REDIRECT_URI=https://strikecircle.local/api/v1/auth/oauth/google/callback`
+	- `FACEBOOK_APP_ID=...`
+	- `FACEBOOK_APP_SECRET=...`
+	- `FACEBOOK_REDIRECT_URI=https://strikecircle.local/api/v1/auth/oauth/facebook/callback`
+
+- Run auth migrations:
+
+```sh
+php migrations/_create_auth_tables.php
+```
+
+- Endpoints (JSON):
+	- POST `/api/v1/auth/register` { username, email, password, display_name?, remember_me? }
+	- POST `/api/v1/auth/login` { identifier, password, remember_me? }
+	- POST `/api/v1/auth/refresh` (uses HttpOnly cookie + header `X-Refresh-CSRF`)
+	- POST `/api/v1/auth/logout` (clears cookies; requires `X-Refresh-CSRF`)
+	- GET `/api/v1/auth/me` (Authorization: Bearer <access_token>)
+	- GET `/api/v1/auth/oauth/google/start` → provider redirect
+	- GET `/api/v1/auth/oauth/google/callback`
+	- GET `/api/v1/auth/oauth/facebook/start` → provider redirect
+	- GET `/api/v1/auth/oauth/facebook/callback`
+
+- Cookies:
+	- `refresh_token`: HttpOnly, SameSite=Lax, Path=/api/v1/auth
+	- `refresh_csrf`: readable; include in header `X-Refresh-CSRF` for refresh/logout
+
+- Frontend helper auto-refreshes access tokens on 401 via cookie-based refresh.

@@ -42,7 +42,8 @@ class UserFactory extends Factory
         return array_merge([
             'email' => $email,
             'username' => $username,
-            'password' => $password,
+            'password' => $password, // legacy column
+            'password_hash' => $password, // preferred column
             'display_name' => $display,
             'avatar_url' => $avatar,
             'bio' => $bio,
